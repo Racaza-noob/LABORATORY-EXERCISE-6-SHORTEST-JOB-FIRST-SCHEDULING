@@ -1,0 +1,86 @@
+#include <iostream>
+#include <iomanip>
+#include <cstring>
+using namespace std;
+
+struct Task {
+    char id[10];
+    int arrival;
+    int burst;
+    int completion;
+    int turnaround;
+    int waiting;
+};
+
+int main() {
+    int processCount;
+    cout << "Enter the number of tasks: ";
+    cin >> processCount;
+
+    Task tasks[100];
+
+    cout << "Enter Task ID, Arrival Time, and Burst Time (space-separated):\n";
+    for (int i = 0; i < processCount; i++) {
+        cout << "Task " << (i + 1) << ": ";
+        cin >> tasks[i].id >> tasks[i].arrival >> tasks[i].burst;
+    }
+
+    int finished = 0;
+    int currentTime = 0;
+    float totalWaiting = 0;
+    float totalTurnaround = 0;
+    bool finishedTasks[100] = {false};
+
+    while (finished < processCount) {
+        int shortestIndex = -1;
+        int minimumBurst = 100000;
+
+        for (int i = 0; i < processCount; i++) {
+            if (!finishedTasks[i] && tasks[i].arrival <= currentTime && tasks[i].burst < minimumBurst) {
+                minimumBurst = tasks[i].burst;
+                shortestIndex = i;
+            }
+        }
+
+        if (shortestIndex != -1) {
+            currentTime += tasks[shortestIndex].burst;
+            tasks[shortestIndex].completion = currentTime;
+            tasks[shortestIndex].turnaround = tasks[shortestIndex].completion - tasks[shortestIndex].arrival;
+            tasks[shortestIndex].waiting = tasks[shortestIndex].turnaround - tasks[shortestIndex].burst;
+
+            totalWaiting += tasks[shortestIndex].waiting;
+            totalTurnaround += tasks[shortestIndex].turnaround;
+
+            finishedTasks[shortestIndex] = true;
+            finished++;
+        } else {
+            currentTime++;
+        }
+    }
+
+    cout << "\nFinal Task Results:\n";
+    cout << left << setw(12) << "TaskID"
+         << setw(13) << "ArrivalTime"
+         << setw(11) << "BurstTime"
+         << setw(16) << "CompletionTime"
+         << setw(16) << "TurnaroundTime"
+         << setw(12) << "WaitingTime" << endl;
+
+    for (int i = 0; i < processCount; i++) {
+        cout << left << setw(12) << tasks[i].id
+             << setw(13) << tasks[i].arrival
+             << setw(11) << tasks[i].burst
+             << setw(16) << tasks[i].completion
+             << setw(16) << tasks[i].turnaround
+             << setw(12) << tasks[i].waiting << endl;
+    }
+
+    float averageWaiting = totalWaiting / processCount;
+    float averageTurnaround = totalTurnaround / processCount;
+    cout << "\nAverage Times:\n";
+    cout << "Average Waiting Time: " << averageWaiting << endl;
+    cout << "Average Turnaround Time: " << averageTurnaround << endl;
+
+    return 0;
+}
+
